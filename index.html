@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -5,703 +6,194 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualizador HTML</title>
-    <style>
-        :root {
-            --primary: #4a90e2;
-            --primary-dark: #2c5aa0;
-            --secondary: #7b68ee;
-            --success: #52c41a;
-            --danger: #f5222d;
-            --bg-light: #f5f7fa;
-            --bg-white: #ffffff;
-            --text-primary: #1f2937;
-            --text-secondary: #6b7280;
-            --border-color: #e5e7eb;
-            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
-            --radius: 8px;
-            --spacing: 16px;
-        }
 
+    <style>
         * {
             box-sizing: border-box;
         }
 
-        html,
         body {
-            height: 100%;
             margin: 0;
-            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #eee;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background: var(--bg-light);
-            color: var(--text-primary);
+        #editor {
+            width: 80%;
+            max-width: 1000px;
+            margin: 30px auto;
         }
 
-        /* ===== Modo Seleção ===== */
-        .mode-selector {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: var(--spacing);
-        }
-
-        .mode-selector.hidden {
-            display: none;
-        }
-
-        .selector-content {
-            text-align: center;
-            max-width: 800px;
-            animation: slideUp 0.4s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .selector-content h1 {
-            font-size: 2.5rem;
-            margin-bottom: 12px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .selector-content p {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            margin-bottom: 50px;
-        }
-
-        .mode-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .mode-card {
-            background: var(--bg-white);
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius);
-            padding: 32px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .mode-card:hover {
-            border-color: var(--primary);
-            box-shadow: var(--shadow-lg);
-            transform: translateY(-4px);
-        }
-
-        .mode-icon {
-            font-size: 3rem;
-            width: 80px;
-            height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--primary)20, var(--secondary)20);
-            border-radius: 50%;
-        }
-
-        .mode-card:nth-child(1) .mode-icon {
-            background: linear-gradient(135deg, #4a90e220, #7b68ee20);
-        }
-
-        .mode-card:nth-child(2) .mode-icon {
-            background: linear-gradient(135deg, #52c41a20, #13c2c220);
-        }
-
-        .mode-card h2 {
-            font-size: 1.5rem;
-            margin: 0;
-            color: var(--text-primary);
-        }
-
-        .mode-card p {
-            margin: 0;
-            color: var(--text-secondary);
-            font-size: 0.95rem;
+        h1 {
             text-align: center;
         }
 
-        /* ===== Editor ===== */
-        .editor-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            background: var(--bg-light);
+        .campo {
+            margin-bottom: 15px;
         }
 
-        .editor-container.hidden {
-            display: none;
-        }
-
-        .editor-header {
-            background: var(--bg-white);
-            border-bottom: 1px solid var(--border-color);
-            padding: var(--spacing);
-            box-shadow: var(--shadow);
-        }
-
-        .editor-header-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .editor-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .editor-title h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            color: var(--text-primary);
-        }
-
-        .mode-badge {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .editor-header-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .editor-content {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-            gap: var(--spacing);
-            padding: var(--spacing);
-        }
-
-        .editor-inputs {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing);
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .editor-group {
-            background: var(--bg-white);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            padding: var(--spacing);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .editor-group label {
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: var(--text-primary);
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
         }
 
         textarea {
             width: 100%;
-            padding: 12px;
-            font-family: 'Fira Code', 'Courier New', monospace;
-            font-size: 13px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
+            height: 250px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 15px;
             resize: vertical;
-            background: #fafbfc;
-            color: var(--text-primary);
-            line-height: 1.5;
-            transition: border-color 0.3s;
+            border: 1px solid #aaa;
         }
 
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: var(--bg-white);
-            box-shadow: 0 0 0 3px var(--primary)20;
-        }
-
-        .buttons-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+        #css,
+        #js {
+            height: 180px;
         }
 
         button {
-            padding: 10px 18px;
-            border: none;
-            border-radius: var(--radius);
-            font-weight: 600;
-            font-size: 0.95rem;
+            padding: 10px 20px;
+            margin-right: 5px;
             cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            flex: 1;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn-secondary {
-            background: var(--bg-light);
-            color: var(--primary);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-secondary:hover {
-            background: var(--border-color);
-        }
-
-        .btn-danger {
-            background: rgba(245, 34, 45, 0.1);
-            color: var(--danger);
-            border: 1px solid rgba(245, 34, 45, 0.3);
-        }
-
-        .btn-danger:hover {
-            background: rgba(245, 34, 45, 0.2);
-        }
-
-        button:focus {
-            outline: 2px solid var(--primary);
-            outline-offset: 2px;
-        }
-
-        /* ===== Modo HTML Único ===== */
-        .html-only-group {
-            min-height: 400px;
-        }
-
-        .html-only-group textarea {
-            height: 400px;
-        }
-
-        /* ===== Preview ===== */
-        .preview-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing);
-        }
-
-        .preview-header {
-            background: var(--bg-white);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            padding: var(--spacing);
-            text-align: center;
-        }
-
-        .preview-header h2 {
-            margin: 0;
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-        }
-
-        #preview {
-            flex: 1;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
+            border: 1px solid #999;
             background: white;
         }
 
-        /* ===== Modal Preview (Mobile) ===== */
-        .preview-modal {
+        button:hover {
+            background: #ddd;
+        }
+
+        .opcionais {
+            margin-bottom: 15px;
+        }
+
+        .opcional {
+            display: none;
+        }
+
+        #preview {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: white;
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-        }
-
-        .preview-modal.active {
-            display: flex;
-        }
-
-        .preview-modal-header {
-            background: var(--bg-white);
-            border-bottom: 1px solid var(--border-color);
-            padding: var(--spacing);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .preview-modal iframe {
-            flex: 1;
             border: none;
-        }
-
-        /* ===== Responsive ===== */
-        @media (max-width: 1024px) {
-            .editor-content {
-                flex-direction: column;
-                padding: 8px;
-            }
-
-            .preview-section {
-                display: none;
-            }
-
-            #preview {
-                display: none;
-            }
-
-            .preview-modal.active {
-                display: flex;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .mode-buttons {
-                grid-template-columns: 1fr;
-            }
-
-            .selector-content h1 {
-                font-size: 2rem;
-            }
-
-            .editor-header-top {
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            .mode-card {
-                padding: 24px;
-            }
-
-            .editor-title h1 {
-                font-size: 1.3rem;
-            }
-        }
-
-        /* ===== Scrollbar ===== */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-light);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #ccc;
-        }
-
-        .hidden {
-            display: none !important;
         }
     </style>
 </head>
 
 <body>
-    <!-- ===== Seletor de Modo ===== -->
-    <div class="mode-selector" id="modeSelector">
-        <div class="selector-content">
-            <h1>📝 Visualizador HTML</h1>
-            <p>Escolha como deseja trabalhar com seu código</p>
 
-            <div class="mode-buttons">
-                <button class="mode-card" onclick="App.selectMode('single')">
-                    <div class="mode-icon">📄</div>
-                    <h2>HTML Único</h2>
-                    <p>Escreva tudo em um arquivo</p>
-                </button>
+    <div id="editor">
 
-                <button class="mode-card" onclick="App.selectMode('separated')">
-                    <div class="mode-icon">📁</div>
-                    <h2>Arquivos Separados</h2>
-                    <p>HTML, CSS e JavaScript separados</p>
-                </button>
-            </div>
+        <h1>Visualizador HTML</h1>
+
+        <!-- HTML -->
+        <div class="campo">
+            <label for="html">HTML</label>
+
+            <textarea id="html" placeholder="Cole seu HTML aqui..."></textarea>
         </div>
+
+
+        <!-- Botões para adicionar CSS e JS -->
+        <div class="opcionais">
+
+            <button onclick="mostrarCSS()">
+                + Adicionar CSS
+            </button>
+
+            <button onclick="mostrarJS()">
+                + Adicionar JavaScript
+            </button>
+
+        </div>
+
+
+        <!-- CSS -->
+        <div id="campoCSS" class="campo opcional">
+
+            <label for="css">CSS</label>
+
+            <textarea id="css" placeholder="Cole seu CSS aqui..."></textarea>
+
+        </div>
+
+
+        <!-- JavaScript -->
+        <div id="campoJS" class="campo opcional">
+
+            <label for="js">JavaScript</label>
+
+            <textarea id="js" placeholder="Cole seu JavaScript aqui..."></textarea>
+
+        </div>
+
+
+        <button onclick="visualizar()">
+            Visualizar
+        </button>
+
     </div>
 
-    <!-- ===== Editor ===== -->
-    <div class="editor-container hidden" id="editorContainer">
-        <!-- Header -->
-        <div class="editor-header">
-            <div class="editor-header-top">
-                <div class="editor-title">
-                    <h1>Visualizador HTML</h1>
-                    <span class="mode-badge" id="modeBadge">HTML Único</span>
-                </div>
-                <div class="editor-header-actions">
-                    <button class="btn-secondary" onclick="App.reset()">↺ Limpar</button>
-                    <button class="btn-danger" onclick="App.changeMode()">↩ Voltar</button>
-                </div>
-            </div>
-        </div>
 
-        <!-- Conteúdo -->
-        <div class="editor-content">
-            <!-- Inputs -->
-            <div class="editor-inputs">
-                <!-- HTML Único -->
-                <div id="singleModeGroup" class="editor-group html-only-group">
-                    <label for="htmlSingle">HTML Completo</label>
-                    <textarea id="htmlSingle" placeholder="<!DOCTYPE html>&#10;<html>&#10;  <head>...</head>&#10;  <body>...</body>&#10;</html>"></textarea>
-                </div>
+    <!-- Área onde o resultado será exibido -->
+    <iframe id="preview"></iframe>
 
-                <!-- HTML Separado -->
-                <div id="separatedModeGroup" class="hidden">
-                    <div class="editor-group">
-                        <label for="htmlSeparated">HTML</label>
-                        <textarea id="htmlSeparated" placeholder="<h1>Olá, Mundo!</h1>&#10;<p>Seu conteúdo aqui...</p>" style="height: 150px;"></textarea>
-                    </div>
-
-                    <div class="editor-group">
-                        <label for="css">CSS</label>
-                        <textarea id="css" placeholder="body {&#10;  font-family: Arial;&#10;  margin: 20px;&#10;}" style="height: 150px;"></textarea>
-                    </div>
-
-                    <div class="editor-group">
-                        <label for="js">JavaScript</label>
-                        <textarea id="js" placeholder="console.log('Hello, World!');" style="height: 150px;"></textarea>
-                    </div>
-                </div>
-
-                <!-- Botões -->
-                <div class="editor-group">
-                    <button class="btn-primary" onclick="App.preview()">▶ Visualizar</button>
-                </div>
-            </div>
-
-            <!-- Preview (Desktop) -->
-            <div class="preview-section" id="previewSection">
-                <div class="preview-header">
-                    <h2>📺 Visualização</h2>
-                </div>
-                <iframe id="preview"></iframe>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== Preview Modal (Mobile) ===== -->
-    <div class="preview-modal" id="previewModal">
-        <div class="preview-modal-header">
-            <h2>Visualização</h2>
-            <button class="btn-secondary" onclick="App.closePreview()">✕ Fechar</button>
-        </div>
-        <iframe id="previewMobile"></iframe>
-    </div>
 
     <script>
-        const App = {
-            currentMode: null,
-            isMobile: window.innerWidth <= 1024,
 
-            elements: {
-                modeSelector: document.getElementById('modeSelector'),
-                editorContainer: document.getElementById('editorContainer'),
-                modeBadge: document.getElementById('modeBadge'),
-                previewSection: document.getElementById('previewSection'),
+        function mostrarCSS() {
 
-                // Modo HTML Único
-                htmlSingle: document.getElementById('htmlSingle'),
-                singleModeGroup: document.getElementById('singleModeGroup'),
+            const campo = document.getElementById("campoCSS");
 
-                // Modo Separado
-                htmlSeparated: document.getElementById('htmlSeparated'),
-                css: document.getElementById('css'),
-                js: document.getElementById('js'),
-                separatedModeGroup: document.getElementById('separatedModeGroup'),
+            campo.style.display = "block";
 
-                // Preview
-                preview: document.getElementById('preview'),
-                previewMobile: document.getElementById('previewMobile'),
-                previewModal: document.getElementById('previewModal'),
-            },
-
-            init() {
-                this.attachEventListeners();
-                this.loadFromStorage();
-                window.addEventListener('resize', () => {
-                    this.isMobile = window.innerWidth <= 1024;
-                });
-            },
-
-            attachEventListeners() {
-                [this.elements.htmlSingle, this.elements.htmlSeparated, this.elements.css, this.elements.js]
-                    .forEach(el => el?.addEventListener('input', () => this.saveToStorage()));
-            },
-
-            selectMode(mode) {
-                this.currentMode = mode;
-                this.elements.modeSelector.classList.add('hidden');
-                this.elements.editorContainer.classList.remove('hidden');
-
-                if (mode === 'single') {
-                    this.elements.modeBadge.textContent = '📄 HTML Único';
-                    this.elements.singleModeGroup.classList.remove('hidden');
-                    this.elements.separatedModeGroup.classList.add('hidden');
-                } else {
-                    this.elements.modeBadge.textContent = '📁 Arquivos Separados';
-                    this.elements.singleModeGroup.classList.add('hidden');
-                    this.elements.separatedModeGroup.classList.remove('hidden');
-                }
-
-                this.loadFromStorage();
-            },
-
-            changeMode() {
-                if (confirm('Tem certeza? Você voltará à tela de seleção.')) {
-                    this.elements.modeSelector.classList.remove('hidden');
-                    this.elements.editorContainer.classList.add('hidden');
-                    this.elements.previewModal.classList.remove('active');
-                    this.currentMode = null;
-                }
-            },
-
-            preview() {
-                let html, css = '', js = '';
-
-                if (this.currentMode === 'single') {
-                    html = this.elements.htmlSingle.value.trim();
-                } else {
-                    html = this.elements.htmlSeparated.value.trim();
-                    css = this.elements.css.value.trim();
-                    js = this.elements.js.value.trim();
-                }
-
-                if (!html) {
-                    alert('Por favor, adicione HTML para visualizar.');
-                    return;
-                }
-
-                const fullHTML = this.buildDocument(html, css, js);
-
-                if (this.isMobile) {
-                    this.elements.previewMobile.srcdoc = fullHTML;
-                    this.elements.previewModal.classList.add('active');
-                } else {
-                    this.elements.preview.srcdoc = fullHTML;
-                }
-            },
-
-            buildDocument(html, css, js) {
-                if (this.currentMode === 'single') {
-                    return html;
-                }
-
-                return `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>${css}</style>
-</head>
-<body>
-    ${html}
-    <script>${js}<\/script>
-</body>
-</html>`;
-            },
-
-            closePreview() {
-                this.elements.previewModal.classList.remove('active');
-            },
-
-            reset() {
-                if (confirm('Limpar todos os campos?')) {
-                    this.elements.htmlSingle.value = '';
-                    this.elements.htmlSeparated.value = '';
-                    this.elements.css.value = '';
-                    this.elements.js.value = '';
-                    this.elements.preview.srcdoc = '';
-                    this.elements.previewMobile.srcdoc = '';
-                    this.saveToStorage();
-                }
-            },
-
-            saveToStorage() {
-                const data = {
-                    mode: this.currentMode,
-                    htmlSingle: this.elements.htmlSingle.value,
-                    htmlSeparated: this.elements.htmlSeparated.value,
-                    css: this.elements.css.value,
-                    js: this.elements.js.value,
-                };
-                localStorage.setItem('htmlVisualizerData', JSON.stringify(data));
-            },
-
-            loadFromStorage() {
-                const data = localStorage.getItem('htmlVisualizerData');
-                if (data) {
-                    try {
-                        const parsed = JSON.parse(data);
-                        this.elements.htmlSingle.value = parsed.htmlSingle || '';
-                        this.elements.htmlSeparated.value = parsed.htmlSeparated || '';
-                        this.elements.css.value = parsed.css || '';
-                        this.elements.js.value = parsed.js || '';
-                    } catch (e) {
-                        console.error('Erro ao carregar dados:', e);
-                    }
-                }
-            }
-        };
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => App.init());
-        } else {
-            App.init();
         }
+
+
+        function mostrarJS() {
+
+            const campo = document.getElementById("campoJS");
+
+            campo.style.display = "block";
+
+        }
+
+
+        function visualizar() {
+
+            const html = document.getElementById("html").value;
+            const css = document.getElementById("css").value;
+            const js = document.getElementById("js").value;
+
+            const codigoFinal = `
+                ${html}
+
+                <style>
+                    ${css}
+                </style>
+
+                <script>
+                    ${js}
+                <\/script>
+            `;
+
+            const preview = document.getElementById("preview");
+
+            preview.srcdoc = codigoFinal;
+
+            document.getElementById("editor").style.display = "none";
+
+            preview.style.display = "block";
+        }
+
     </script>
+
 </body>
 
 </html>
+
