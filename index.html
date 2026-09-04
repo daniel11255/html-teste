@@ -1,199 +1,166 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador HTML</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #eee;
-        }
-
-        #editor {
-            width: 80%;
-            max-width: 1000px;
-            margin: 30px auto;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        .campo {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        textarea {
-            width: 100%;
-            height: 250px;
-            padding: 15px;
-            font-family: monospace;
-            font-size: 15px;
-            resize: vertical;
-            border: 1px solid #aaa;
-        }
-
-        #css,
-        #js {
-            height: 180px;
-        }
-
-        button {
-            padding: 10px 20px;
-            margin-right: 5px;
-            cursor: pointer;
-            border: 1px solid #999;
-            background: white;
-        }
-
-        button:hover {
-            background: #ddd;
-        }
-
-        .opcionais {
-            margin-bottom: 15px;
-        }
-
-        .opcional {
-            display: none;
-        }
-
-        #preview {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            border: none;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Visualizador Simples de HTML/CSS/JS</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 16px;
+      background: #f5f5f5;
+    }
+    h1 {
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+    }
+    label {
+      display: inline-block;
+      margin-right: 12px;
+      font-size: 0.9rem;
+    }
+    textarea {
+      width: 100%;
+      height: 180px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.85rem;
+      padding: 8px;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+    button {
+      margin-top: 8px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+    }
+    .output {
+      margin-top: 16px;
+      border: 1px solid #ccc;
+      background: #fff;
+      padding: 8px;
+      min-height: 120px;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.85rem;
+    }
+    .frame-container {
+      margin-top: 16px;
+      border: 1px solid #ccc;
+      background: #fff;
+    }
+    iframe {
+      width: 100%;
+      height: 220px;
+      border: none;
+      display: block;
+    }
+    .note {
+      font-size: 0.8rem;
+      color: #555;
+      margin-top: 4px;
+    }
+  </style>
 </head>
-
 <body>
+  <h1>Visualizador simples de HTML / CSS / JS</h1>
 
-    <div id="editor">
+  <div>
+    <label><input type="checkbox" id="useHtml" /> HTML</label>
+    <label><input type="checkbox" id="useCss" /> CSS</label>
+    <label><input type="checkbox" id="useJs" /> JS</label>
+  </div>
+  <div class="note">
+    Se não marcar todos os 3, o conteúdo será tratado como “code inbutido” (incorporado) e ainda será usado.
+  </div>
 
-        <h1>Visualizador HTML</h1>
+  <textarea id="codeInput" placeholder="Cole seu código aqui (HTML, CSS, JS ou misturado)..."></textarea>
+  <br />
+  <button id="runBtn">Executar / Visualizar</button>
 
-        <!-- HTML -->
-        <div class="campo">
-            <label for="html">HTML</label>
+  <h2 style="font-size:1rem; margin-top:16px;">Saída (texto)</h2>
+  <div id="textOutput" class="output"></div>
 
-            <textarea id="html" placeholder="Cole seu HTML aqui..."></textarea>
-        </div>
+  <h2 style="font-size:1rem; margin-top:16px;">Saída (renderizada em iframe)</h2>
+  <div class="frame-container">
+    <iframe id="previewFrame"></iframe>
+  </div>
 
+  <script>
+    document.getElementById('runBtn').addEventListener('click', () => {
+      const useHtml = document.getElementById('useHtml').checked;
+      const useCss = document.getElementById('useCss').checked;
+      const useJs = document.getElementById('useJs').checked;
+      const code = document.getElementById('codeInput').value;
 
-        <!-- Botões para adicionar CSS e JS -->
-        <div class="opcionais">
+      const textOutput = document.getElementById('textOutput');
+      const frame = document.getElementById('previewFrame');
 
-            <button onclick="mostrarCSS()">
-                + Adicionar CSS
-            </button>
+      // Sempre mostra o código como “code inbutido” na saída de texto
+      textOutput.textContent = code;
 
-            <button onclick="mostrarJS()">
-                + Adicionar JavaScript
-            </button>
+      // Monta o conteúdo do iframe
+      let htmlPart = '';
+      let cssPart = '';
+      let jsPart = '';
 
-        </div>
+      const allSelected = useHtml && useCss && useJs;
 
+      if (allSelected) {
+        // Tenta separar por tags se o usuário colou algo parecido com um arquivo completo
+        // Esta é uma separação bem simples e ingênua, só para exemplo.
+        const htmlMatch = code.match(/<!DOCTYPE[^>]*>|<html[\s\S]*<\/html>/i);
+        const styleMatch = code.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+        const scriptMatch = code.match(/<script[^>]*>([\s\S]*?)<\/script>/i);
 
-        <!-- CSS -->
-        <div id="campoCSS" class="campo opcional">
-
-            <label for="css">CSS</label>
-
-            <textarea id="css" placeholder="Cole seu CSS aqui..."></textarea>
-
-        </div>
-
-
-        <!-- JavaScript -->
-        <div id="campoJS" class="campo opcional">
-
-            <label for="js">JavaScript</label>
-
-            <textarea id="js" placeholder="Cole seu JavaScript aqui..."></textarea>
-
-        </div>
-
-
-        <button onclick="visualizar()">
-            Visualizar
-        </button>
-
-    </div>
-
-
-    <!-- Área onde o resultado será exibido -->
-    <iframe id="preview"></iframe>
-
-
-    <script>
-
-        function mostrarCSS() {
-
-            const campo = document.getElementById("campoCSS");
-
-            campo.style.display = "block";
-
+        if (htmlMatch) {
+          htmlPart = htmlMatch[0];
+        } else {
+          // Se não achar <html>... assume que tudo é HTML
+          htmlPart = code;
         }
 
-
-        function mostrarJS() {
-
-            const campo = document.getElementById("campoJS");
-
-            campo.style.display = "block";
-
+        if (styleMatch) {
+          cssPart = styleMatch[1];
         }
-
-
-        function visualizar() {
-
-            const html = document.getElementById("html").value;
-            const css = document.getElementById("css").value;
-            const js = document.getElementById("js").value;
-
-            const codigoFinal = `
-                ${html}
-
-                <style>
-                    ${css}
-                </style>
-
-                <script>
-                    ${js}
-                <\/script>
-            `;
-
-            const preview = document.getElementById("preview");
-
-            preview.srcdoc = codigoFinal;
-
-            document.getElementById("editor").style.display = "none";
-
-            preview.style.display = "block";
+        if (scriptMatch) {
+          jsPart = scriptMatch[1];
         }
+      } else {
+        // Não selecionou todos: trata tudo como “code inbutido”
+        // Coloca tudo dentro de <pre> para visualização e também tenta executar como HTML
+        htmlPart =
+          '<pre style="white-space: pre-wrap; word-break: break-word;">' +
+          escapeHtml(code) +
+          '</pre>';
+        cssPart = '';
+        jsPart = '';
+      }
 
-    </script>
+      const fullHtml =
+        '<!DOCTYPE html>' +
+        '<html lang="pt-BR">' +
+        '<head>' +
+        '<meta charset="UTF-8">' +
+        (cssPart ? '<style>' + cssPart + '</style>' : '') +
+        '</head>' +
+        '<body>' +
+        htmlPart +
+        (jsPart ? '<script>' + jsPart + '<\/script>' : '') +
+        '</body>' +
+        '</html>';
 
+      // Escreve no iframe
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      doc.open();
+      doc.write(fullHtml);
+      doc.close();
+    });
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+  </script>
 </body>
-
 </html>
-
