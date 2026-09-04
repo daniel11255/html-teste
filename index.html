@@ -1,166 +1,271 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Visualizador Simples de HTML/CSS/JS</title>
-  <style>
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      margin: 16px;
-      background: #f5f5f5;
-    }
-    h1 {
-      font-size: 1.2rem;
-      margin-bottom: 8px;
-    }
-    label {
-      display: inline-block;
-      margin-right: 12px;
-      font-size: 0.9rem;
-    }
-    textarea {
-      width: 100%;
-      height: 180px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.85rem;
-      padding: 8px;
-      box-sizing: border-box;
-      resize: vertical;
-    }
-    button {
-      margin-top: 8px;
-      padding: 6px 12px;
-      font-size: 0.9rem;
-    }
-    .output {
-      margin-top: 16px;
-      border: 1px solid #ccc;
-      background: #fff;
-      padding: 8px;
-      min-height: 120px;
-      white-space: pre-wrap;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.85rem;
-    }
-    .frame-container {
-      margin-top: 16px;
-      border: 1px solid #ccc;
-      background: #fff;
-    }
-    iframe {
-      width: 100%;
-      height: 220px;
-      border: none;
-      display: block;
-    }
-    .note {
-      font-size: 0.8rem;
-      color: #555;
-      margin-top: 4px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador HTML CSS JS</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+        }
+
+        header {
+            padding: 15px;
+            background: #222;
+            color: white;
+        }
+
+        header h1 {
+            margin: 0 0 10px;
+            font-size: 22px;
+        }
+
+        .selecao {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .selecao label {
+            cursor: pointer;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 15px;
+        }
+
+        .editor,
+        .preview {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .editor h2,
+        .preview h2 {
+            margin: 0 0 8px;
+            font-size: 18px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 180px;
+            resize: vertical;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+        }
+
+        .preview {
+            min-height: 570px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 520px;
+            border: 1px solid #bbb;
+            background: white;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            color: #666;
+        }
+
+        #status {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        @media (max-width: 800px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
+
 <body>
-  <h1>Visualizador simples de HTML / CSS / JS</h1>
 
-  <div>
-    <label><input type="checkbox" id="useHtml" /> HTML</label>
-    <label><input type="checkbox" id="useCss" /> CSS</label>
-    <label><input type="checkbox" id="useJs" /> JS</label>
-  </div>
-  <div class="note">
-    Se não marcar todos os 3, o conteúdo será tratado como “code inbutido” (incorporado) e ainda será usado.
-  </div>
+    <header>
 
-  <textarea id="codeInput" placeholder="Cole seu código aqui (HTML, CSS, JS ou misturado)..."></textarea>
-  <br />
-  <button id="runBtn">Executar / Visualizar</button>
+        <h1>Visualizador HTML, CSS e JS</h1>
 
-  <h2 style="font-size:1rem; margin-top:16px;">Saída (texto)</h2>
-  <div id="textOutput" class="output"></div>
+        <div class="selecao">
 
-  <h2 style="font-size:1rem; margin-top:16px;">Saída (renderizada em iframe)</h2>
-  <div class="frame-container">
-    <iframe id="previewFrame"></iframe>
-  </div>
+            <label>
+                <input type="checkbox" id="usarHTML" checked>
+                HTML
+            </label>
 
-  <script>
-    document.getElementById('runBtn').addEventListener('click', () => {
-      const useHtml = document.getElementById('useHtml').checked;
-      const useCss = document.getElementById('useCss').checked;
-      const useJs = document.getElementById('useJs').checked;
-      const code = document.getElementById('codeInput').value;
+            <label>
+                <input type="checkbox" id="usarCSS" checked>
+                CSS
+            </label>
 
-      const textOutput = document.getElementById('textOutput');
-      const frame = document.getElementById('previewFrame');
+            <label>
+                <input type="checkbox" id="usarJS" checked>
+                JavaScript
+            </label>
 
-      // Sempre mostra o código como “code inbutido” na saída de texto
-      textOutput.textContent = code;
+        </div>
 
-      // Monta o conteúdo do iframe
-      let htmlPart = '';
-      let cssPart = '';
-      let jsPart = '';
+        <div id="status">
+            Modo: HTML + CSS + JavaScript
+        </div>
 
-      const allSelected = useHtml && useCss && useJs;
+    </header>
 
-      if (allSelected) {
-        // Tenta separar por tags se o usuário colou algo parecido com um arquivo completo
-        // Esta é uma separação bem simples e ingênua, só para exemplo.
-        const htmlMatch = code.match(/<!DOCTYPE[^>]*>|<html[\s\S]*<\/html>/i);
-        const styleMatch = code.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
-        const scriptMatch = code.match(/<script[^>]*>([\s\S]*?)<\/script>/i);
+    <main>
 
-        if (htmlMatch) {
-          htmlPart = htmlMatch[0];
-        } else {
-          // Se não achar <html>... assume que tudo é HTML
-          htmlPart = code;
-        }
+        <section class="editor">
 
-        if (styleMatch) {
-          cssPart = styleMatch[1];
-        }
-        if (scriptMatch) {
-          jsPart = scriptMatch[1];
-        }
-      } else {
-        // Não selecionou todos: trata tudo como “code inbutido”
-        // Coloca tudo dentro de <pre> para visualização e também tenta executar como HTML
-        htmlPart =
-          '<pre style="white-space: pre-wrap; word-break: break-word;">' +
-          escapeHtml(code) +
-          '</pre>';
-        cssPart = '';
-        jsPart = '';
-      }
+            <h2>HTML</h2>
 
-      const fullHtml =
-        '<!DOCTYPE html>' +
-        '<html lang="pt-BR">' +
-        '<head>' +
-        '<meta charset="UTF-8">' +
-        (cssPart ? '<style>' + cssPart + '</style>' : '') +
-        '</head>' +
-        '<body>' +
-        htmlPart +
-        (jsPart ? '<script>' + jsPart + '<\/script>' : '') +
-        '</body>' +
-        '</html>';
+            <textarea id="htmlCode" spellcheck="false"><h1>Olá!</h1>
+<p>Este é um teste.</p>
+<button onclick="teste()">Clique aqui</button></textarea>
 
-      // Escreve no iframe
-      const doc = frame.contentDocument || frame.contentWindow.document;
-      doc.open();
-      doc.write(fullHtml);
-      doc.close();
-    });
+        </section>
 
-    function escapeHtml(str) {
-      return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-    }
-  </script>
+        <section class="editor">
+
+            <h2>CSS</h2>
+
+            <textarea id="cssCode" spellcheck="false">body {
+    font-family: Arial;
+    text-align: center;
+    padding: 30px;
+}
+
+h1 {
+    color: royalblue;
+}
+
+button {
+    padding: 10px 20px;
+    cursor: pointer;
+}</textarea>
+
+        </section>
+
+        <section class="editor">
+
+            <h2>JavaScript</h2>
+
+            <textarea id="jsCode" spellcheck="false">function teste() {
+    alert("JavaScript funcionando!");
+}</textarea>
+
+        </section>
+
+        <section class="preview">
+
+            <h2>Prévia</h2>
+
+            <iframe id="preview"></iframe>
+
+        </section>
+
+    </main>
+
+    <footer>
+        Visualizador simples de HTML, CSS e JavaScript
+    </footer>
+
+    <script>
+        const htmlCode = document.getElementById("htmlCode");
+        const cssCode = document.getElementById("cssCode");
+        const jsCode = document.getElementById("jsCode");
+
+        const usarHTML = document.getElementById("usarHTML");
+        const usarCSS = document.getElementById("usarCSS");
+        const usarJS = document.getElementById("usarJS");
+
+        const preview = document.getElementById("preview");
+        const status = document.getElementById("status");
+
+        function atualizar() {
+
+            const html = htmlCode.value;
+            const css = cssCode.value;
+            const js = jsCode.value;
+
+            const todosSelecionados =
+                usarHTML.checked &&
+                usarCSS.checked &&
+                usarJS.checked;
+
+            /*
+                IMPORTANTE:
+
+                Mesmo que nem todos os três estejam selecionados,
+                nenhum código é descartado.
+
+                Nesse caso, o conteúdo é tratado como código
+                embutido na mesma página de visualização.
+            */
+
+            if (todosSelecionados) {
+                status.textContent = "Modo: HTML + CSS + JavaScript";
+            } else {
+                status.textContent = "Modo: código embutido — nenhum código foi descartado";
+            }
+
+            const documento = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <style>
+        ${css}
+    </style>
+</head>
+
+<body>
+
+    ${html}
+
+    <script>
+        ${js}
+    <\/script>
+
 </body>
+</html>
+`;
+
+            preview.srcdoc = documento;
+        }
+
+        htmlCode.addEventListener("input", atualizar);
+        cssCode.addEventListener("input", atualizar);
+        jsCode.addEventListener("input", atualizar);
+
+        usarHTML.addEventListener("change", atualizar);
+        usarCSS.addEventListener("change", atualizar);
+        usarJS.addEventListener("change", atualizar);
+
+        atualizar();
+    </script>
+
+</body>
+
 </html>
